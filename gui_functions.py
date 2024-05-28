@@ -4,6 +4,7 @@ import PySimpleGUI as sg
 import mediapipe as mp
 from posture_boolean import is_standing, is_hand_raised
 from pose_landmark_utils import output_values
+from posture_calculations import findAngle, findDistance
 # import numpy as np
 
 # Initialize MediaPipe Pose
