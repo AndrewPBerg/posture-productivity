@@ -2,7 +2,7 @@
 import cv2
 import PySimpleGUI as sg
 import mediapipe as mp
-from posture_boolean import *
+from posture_boolean import is_standing, is_hand_raised
 from pose_landmark_utils import output_values
 # import numpy as np
 
@@ -39,17 +39,7 @@ def webcam_gui():
 
     # Main loop
     while True:
-        event, values = window.read(timeout=20)
-        if event == sg.WINDOW_CLOSED:
-            break
-        elif event == 'xyz':
-            output_values(results.pose_landmarks, OUTPUT_LANDMARKS)
-            window['left_shoulder_xyz'].update()
         ret, frame = cap.read()
-        if not ret:
-            print("Error: Failed to capture image")
-            break
-
         # Convert the image to RGB
         image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -58,6 +48,16 @@ def webcam_gui():
 
         # Draw the pose annotation on the image
         annotated_image = frame.copy()
+        event, values = window.read(timeout=20)
+        if event == sg.WINDOW_CLOSED:
+            break
+        elif event == 'xyz':
+            output_values(results.pose_landmarks, OUTPUT_LANDMARKS)
+            window['left_shoulder_xyz'].update()
+        if not ret:
+            print("Error: Failed to capture image")
+            break
+
         if results.pose_landmarks:
             mp.solutions.drawing_utils.draw_landmarks(
                 annotated_image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)

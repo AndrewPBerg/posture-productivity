@@ -1,6 +1,5 @@
 # main.py
 from icecream import ic
-import PySimpleGUI as sg
 from PySimpleGUI import running_mac,running_windows
 def main(arg):
     print(arg)
