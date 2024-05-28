@@ -1,5 +1,7 @@
 # created by virtualenv automatically
 # *\.venv
+# Ignore .ruff cache
+.ruff_cache/
 
 
 ## Auto Generated add .gitignore VSC extension
