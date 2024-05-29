@@ -6,7 +6,7 @@ import cv2
 import PySimpleGUI as sg
 import mediapipe as mp
 # from posture_boolean import is_standing, is_hand_raised
-from pose_landmark_utils import calc_landmark_coords
+from pose_landmark_utils import get_landmark_coordinates
 from posture_calculations import findAngle, findDistance
 from icecream import ic
 import warnings
@@ -33,10 +33,10 @@ def main():
     ]
 
     # TODO Sunset feature
-    # OUTPUT_LANDMARKS = [mp_pose.PoseLandmark.LEFT_SHOULDER,
-    #                     mp_pose.PoseLandmark.RIGHT_SHOULDER,
-    #                     mp_pose.PoseLandmark.MOUTH_RIGHT,
-    #                     mp_pose.PoseLandmark.MOUTH_LEFT]
+    REQ_LANDMARKS = [mp_pose.PoseLandmark.LEFT_SHOULDER,
+                        mp_pose.PoseLandmark.RIGHT_SHOULDER,
+                        mp_pose.PoseLandmark.LEFT_EAR,
+                        mp_pose.PoseLandmark.LEFT_HIP]
 
     # Initilize frame counters.
     good_frames = 0
@@ -67,7 +67,7 @@ def main():
     frame_size = (width, height)
     
     # Instantiate sg window
-    window = sg.Window('Webcam Window', layout, location=(width,height))
+    window = sg.Window('Webcam Window', layout, location=(width,height), resizable=True, size=(width*2,height*2))
     # ===============================================================================================#
 
     # Main loop
@@ -96,55 +96,16 @@ def main():
 
         if event == sg.WINDOW_CLOSED:
             break
-        # elif event == 'xyz':
-        #     output_values(results.pose_landmarks, OUTPUT_LANDMARKS)
-        #     # window['left_shoulder_xyz'].update()
-        # if not success:
-        #     print("Error: Failed to capture image")
-        #     break
-
-        # if results.pose_landmarks:
-        #     mp.solutions.drawing_utils.draw_landmarks(
-        #         annotated_image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
-        # # Check if hand is raised
-        # hand_raised = is_hand_raised(results.pose_landmarks)
-
-        # # Check if the person is standing
-        # standing = is_standing(results.pose_landmarks)
 
         # Use lm and lmPose as representative of the following methods.
         lm = results.pose_landmarks
         lmPose = mp_pose.PoseLandmark
 
-        # Acquire the landmark coordinates.
-
-        # TODO functionize x,y coords: make into a try except as not to close window
-        # Once aligned properly, left or right should not be a concern.     
-         
-        # Left shoulder.
-        try:
-            l_shldr_x, l_shldr_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.LEFT_SHOULDER, w, h)
-
-            r_shldr_x, r_shldr_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.RIGHT_SHOULDER, w, h)
-
-            l_ear_x,l_ear_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.LEFT_HIP, w, h)
-
-            l_hip_x, l_hip_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.LEFT_EAR, w, h)
-        except TypeError:
-            ic(TypeError)
-
-        # l_shldr_x = int(lm.landmark[lmPose.LEFT_SHOULDER].x * w)
-        # l_shldr_y = int(lm.landmark[lmPose.LEFT_SHOULDER].y * h)
-        # Right shoulder
-        # r_shldr_x = int(lm.landmark[lmPose.RIGHT_SHOULDER].x * w)
-        # r_shldr_y = int(lm.landmark[lmPose.RIGHT_SHOULDER].y * h)
-        # Left ear.
-        # l_ear_x = int(lm.landmark[lmPose.LEFT_EAR].x * w)
-        # l_ear_y = int(lm.landmark[lmPose.LEFT_EAR].y * h)
-        # # Left hip.
-        # l_hip_x = int(lm.landmark[lmPose.LEFT_HIP].x * w)
-        # l_hip_y = int(lm.landmark[lmPose.LEFT_HIP].y * h)
+        # Calculate posture
+        l_shldr_x, l_shldr_y = get_landmark_coordinates(lm, lmPose.LEFT_SHOULDER, w, h)
+        r_shldr_x, r_shldr_y = get_landmark_coordinates(lm, lmPose.RIGHT_SHOULDER, w, h)
+        l_ear_x, l_ear_y = get_landmark_coordinates(lm, lmPose.LEFT_EAR, w, h)
+        l_hip_x, l_hip_y = get_landmark_coordinates(lm, lmPose.LEFT_HIP, w, h)
 
         # Calculate distance between left shoulder and right shoulder points.
         offset = findDistance(l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y)

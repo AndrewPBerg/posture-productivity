@@ -56,15 +56,34 @@ def output_values(pose_landmarks, landmark_list, display=True):
     ic(result_landmark_dict)
     return result_landmark_dict
 
-def calc_landmark_coords(results, mp_pose, landmark_name, width, height):
+def get_landmark_coordinates(landmarks, landmark_name, image_width, image_height):
+    """
+    Args: 
+    * landmarks: () accepts results.pose_landmarks
+    * landmark_name: accepts lmPose.* get the name of the desired landmark to be checked
+    * image_width: width of the image
+    * image_height: height of the image
+
+    Returns: 
+    * x, y : coordinates calculated from the pixel position of landmark
+    * None, None: in the case of exceptions
+
+    Example: 
+    lm = results.pose_landmarks
+    lmPose = mp_pose.PoseLandmark
+
+    # Calculate posture
+    l_shldr_x, l_shldr_y = get_landmark_coordinates(lm, lmPose.LEFT_SHOULDER, w, h)
+    """
     try:
-        # lm = results.pose_landmarks
-
-        x = int(results.pose_landmarks.landmark[landmark_name].x * width)
-        y = int(results.pose_landmarks.landmark[landmark_name].y * height)
-        return x,y  
-
+        x = int(landmarks.landmark[landmark_name].x * image_width)
+        y = int(landmarks.landmark[landmark_name].y * image_height)
+        return x, y
+    except IndexError:
+        # Handle the case where the landmark is not found
+        return None, None
     except AttributeError:
-        ic("no landmarks detected, ERROR")
-        # return None, None
+        # Handle the case where landmarks are not properly initialized
+        return None, None
+
 
