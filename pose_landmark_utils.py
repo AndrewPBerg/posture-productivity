@@ -55,3 +55,16 @@ def output_values(pose_landmarks, landmark_list, display=True):
 
     ic(result_landmark_dict)
     return result_landmark_dict
+
+def calc_landmark_coords(results, mp_pose, landmark_name, width, height):
+    try:
+        # lm = results.pose_landmarks
+
+        x = int(results.pose_landmarks.landmark[landmark_name].x * width)
+        y = int(results.pose_landmarks.landmark[landmark_name].y * height)
+        return x,y  
+
+    except AttributeError:
+        ic("no landmarks detected, ERROR")
+        # return None, None
+

@@ -6,7 +6,7 @@ import cv2
 import PySimpleGUI as sg
 import mediapipe as mp
 # from posture_boolean import is_standing, is_hand_raised
-# from pose_landmark_utils import output_values
+from pose_landmark_utils import calc_landmark_coords
 from posture_calculations import findAngle, findDistance
 from icecream import ic
 import warnings
@@ -18,23 +18,25 @@ warnings.filterwarnings("ignore", category=UserWarning, module="google.protobuf"
 def main():
     # =============================CONSTANTS and INITIALIZATIONS=====================================#
     
+    # in seconds, determine how long a user must have a bad posture until a notification
+    POSTURE_WARNING_TIME = 2
+
+    # accesses mediapipe pose estimation solutions 
     mp_pose = mp.solutions.pose
+
+    # Instantiate pose estimater
     pose = mp_pose.Pose()
 
+    # sg Windows element layout
     layout = [
-
         [sg.Image(filename='', key='image')],
-        [sg.Text("Hand Raised: "), sg.Text("", key='hand_raised_text')],
-        [sg.Text("Is Standing: "), sg.Text("", key='is_standing_text')],
-        [sg.Button("shoulders x,y,z", key='xyz')],
-        [sg.Text("Left shoulder"), sg.Text("", key='left_shoulder_xyz')],
-        [sg.Text("Right shoulder"), sg.Text("", key='right_shoulder_xyz')]
     ]
 
-    OUTPUT_LANDMARKS = [mp_pose.PoseLandmark.LEFT_SHOULDER,
-                        mp_pose.PoseLandmark.RIGHT_SHOULDER,
-                        mp_pose.PoseLandmark.MOUTH_RIGHT,
-                        mp_pose.PoseLandmark.MOUTH_LEFT]
+    # TODO Sunset feature
+    # OUTPUT_LANDMARKS = [mp_pose.PoseLandmark.LEFT_SHOULDER,
+    #                     mp_pose.PoseLandmark.RIGHT_SHOULDER,
+    #                     mp_pose.PoseLandmark.MOUTH_RIGHT,
+    #                     mp_pose.PoseLandmark.MOUTH_LEFT]
 
     # Initilize frame counters.
     good_frames = 0
@@ -44,15 +46,13 @@ def main():
     font = cv2.FONT_HERSHEY_SIMPLEX
 
     # Colors.
-    blue = (255, 127, 0)
+    # blue = (255, 127, 0)
     red = (50, 50, 255)
     green = (127, 255, 0)
-    dark_blue = (127, 20, 0)
+    # dark_blue = (127, 20, 0)
     light_green = (127, 233, 100)
     yellow = (0, 255, 255)
     pink = (255, 0, 255)
-    
-    window = sg.Window('Webcam Window', layout, location=(800, 400))
 
     # Open the webcam
     cap = cv2.VideoCapture(0)
@@ -65,24 +65,33 @@ def main():
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frame_size = (width, height)
+    
+    # Instantiate sg window
+    window = sg.Window('Webcam Window', layout, location=(width,height))
     # ===============================================================================================#
 
     # Main loop
     while True:
         success, image = cap.read()
+        if not success:
+            ic("Error reading image")
+            break
+
         # Get fps.
         fps = cap.get(cv2.CAP_PROP_FPS)
         # Get height and width.
         h, w = image.shape[:2]
 
-        # Convert the image from BGR to RGB
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # Convert the image from BGR to RGB --- MEDIAPIPE REQUIREMENT!!!
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # Process the image and detect poses
-        keypoints = pose.process(image_rgb)
+        results = pose.process(image)
 
+        # Convert image back to BGR for better image visibility
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         # Draw the pose annotation on the image
-        annotated_image = image.copy()
+        # annotated_image = image.copy()
         event, values = window.read(timeout=20)
 
         if event == sg.WINDOW_CLOSED:
@@ -104,24 +113,38 @@ def main():
         # # Check if the person is standing
         # standing = is_standing(results.pose_landmarks)
 
-                # Use lm and lmPose as representative of the following methods.
-        lm = keypoints.pose_landmarks
+        # Use lm and lmPose as representative of the following methods.
+        lm = results.pose_landmarks
         lmPose = mp_pose.PoseLandmark
 
         # Acquire the landmark coordinates.
-        # Once aligned properly, left or right should not be a concern.      
+
+        # TODO functionize x,y coords: make into a try except as not to close window
+        # Once aligned properly, left or right should not be a concern.     
+         
         # Left shoulder.
-        l_shldr_x = int(lm.landmark[lmPose.LEFT_SHOULDER].x * w)
-        l_shldr_y = int(lm.landmark[lmPose.LEFT_SHOULDER].y * h)
+        try:
+            l_shldr_x, l_shldr_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.LEFT_SHOULDER, w, h)
+
+            r_shldr_x, r_shldr_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.RIGHT_SHOULDER, w, h)
+
+            l_ear_x,l_ear_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.LEFT_HIP, w, h)
+
+            l_hip_x, l_hip_y = calc_landmark_coords(results, mp_pose, mp_pose.PoseLandmark.LEFT_EAR, w, h)
+        except TypeError:
+            ic(TypeError)
+
+        # l_shldr_x = int(lm.landmark[lmPose.LEFT_SHOULDER].x * w)
+        # l_shldr_y = int(lm.landmark[lmPose.LEFT_SHOULDER].y * h)
         # Right shoulder
-        r_shldr_x = int(lm.landmark[lmPose.RIGHT_SHOULDER].x * w)
-        r_shldr_y = int(lm.landmark[lmPose.RIGHT_SHOULDER].y * h)
+        # r_shldr_x = int(lm.landmark[lmPose.RIGHT_SHOULDER].x * w)
+        # r_shldr_y = int(lm.landmark[lmPose.RIGHT_SHOULDER].y * h)
         # Left ear.
-        l_ear_x = int(lm.landmark[lmPose.LEFT_EAR].x * w)
-        l_ear_y = int(lm.landmark[lmPose.LEFT_EAR].y * h)
-        # Left hip.
-        l_hip_x = int(lm.landmark[lmPose.LEFT_HIP].x * w)
-        l_hip_y = int(lm.landmark[lmPose.LEFT_HIP].y * h)
+        # l_ear_x = int(lm.landmark[lmPose.LEFT_EAR].x * w)
+        # l_ear_y = int(lm.landmark[lmPose.LEFT_EAR].y * h)
+        # # Left hip.
+        # l_hip_x = int(lm.landmark[lmPose.LEFT_HIP].x * w)
+        # l_hip_y = int(lm.landmark[lmPose.LEFT_HIP].y * h)
 
         # Calculate distance between left shoulder and right shoulder points.
         offset = findDistance(l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y)
@@ -131,7 +154,7 @@ def main():
         if offset < 100:
             cv2.putText(image, str(int(offset)) + ' Aligned', (w - 150, 30), font, 0.9, green, 2)
         else:
-            cv2.putText(image, str(int(offset)) + ' Not Aligned', (w - 150, 30), font, 0.9, red, 2)
+            cv2.putText(image, str(int(offset)) + '\n Not Aligned', (w - 150, 30), font, 0.9, red, 2)
 
         # Calculate angles.
         neck_inclination = findAngle(l_shldr_x, l_shldr_y, l_ear_x, l_ear_y)
@@ -186,6 +209,7 @@ def main():
             cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - 100), red, 4)
 
         # Calculate the time of remaining in a particular posture.
+        # time = total_frames/fps
         good_time = (1 / fps) * good_frames
         bad_time =  (1 / fps) * bad_frames
 
@@ -198,7 +222,7 @@ def main():
             cv2.putText(image, time_string_bad, (10, h - 20), font, 0.9, red, 2)
 
         # If you stay in bad posture for more than 3 minutes (180s) send an alert.
-        if bad_time > 2: # TODO make value later
+        if bad_time > POSTURE_WARNING_TIME: # TODO make value later
             # sendWarning()
             ic("BAD POSTURE Warning!")
 
