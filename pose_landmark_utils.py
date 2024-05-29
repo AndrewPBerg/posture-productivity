@@ -63,6 +63,7 @@ def calc_landmark_coords(results, mp_pose, landmark_name, width, height):
         x = int(results.pose_landmarks.landmark[landmark_name].x * width)
         y = int(results.pose_landmarks.landmark[landmark_name].y * height)
         return x,y  
+#         # l_shldr_x = int(lm.landmark[lmPose.LEFT_SHOULDER].x * w)
 
     except AttributeError:
         ic("no landmarks detected, ERROR")
