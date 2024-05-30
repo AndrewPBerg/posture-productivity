@@ -11,8 +11,10 @@ numpy = "^1.26.4"
 mediapipe = "^0.10.14"
 opencv-python = "^4.9.0.80"
 pysimplegui = "^5.0.4"
-ruff = "^0.4.6"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.4.6"
 
 [build-system]
 requires = ["poetry-core"]

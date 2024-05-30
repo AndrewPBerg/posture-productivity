@@ -1,6 +1,7 @@
-# pose_landmark_utils.py
 import mediapipe as mp
 from icecream import ic
+import math as m
+
 def create_landmark_dict(pose_landmarks, landmark_name):
     """
     #### dictionary in the format {x: x_value, y: y_value, z: z_value, name: landmark_name} for a specified mediapipe landmark_name
@@ -80,10 +81,20 @@ def get_landmark_coordinates(landmarks, landmark_name, image_width, image_height
         y = int(landmarks.landmark[landmark_name].y * image_height)
         return x, y
     except IndexError:
-        # Handle the case where the landmark is not found
+        # Handle case where the landmark is not found
         return None, None
     except AttributeError:
-        # Handle the case where landmarks are not properly initialized
+        # Handle case where landmarks are not properly initialized
         return None, None
 
 
+
+def findDistance(x1, y1, x2, y2):
+    dist = m.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return dist
+
+def findAngle(x1, y1, x2, y2):
+    theta = m.acos((y2 - y1) * (-y1) / (m.sqrt(
+        (x2 - x1) ** 2 + (y2 - y1) ** 2) * y1))
+    degree = int(180 / m.pi) * theta
+    return degree

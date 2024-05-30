@@ -968,4 +968,4 @@ numpy = ["NumPy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "46a362260e04d2e2c6c729bf0f7a4686d574bb6a76a9b0631cfd0fb5daccde4b"
+content-hash = "c3cd166305643cd646223f65327a5d8bd7f164b26d6cd9e960bbe0fe9033ec46"
