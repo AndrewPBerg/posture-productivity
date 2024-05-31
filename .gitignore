@@ -2,7 +2,7 @@
 # *\.venv
 # Ignore .ruff cache
 .ruff_cache/
-
+IDEA_SOUP.md
 
 ## Auto Generated add .gitignore VSC extension
 
