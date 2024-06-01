@@ -43,7 +43,11 @@ def main():
     # initialize window
     layout = [[sg.Image(filename='', key='image')],
               [sg.Button(button_text='Click for Snapshot',tooltip='Click for Data Snapshot', key='snapshot_button'), sg.Text(text='',key='snapshot_text')],
-              [sg.Text('Display annotations (On/Off):'),sg.Button('', image_data=toggle_btn_on, key='-TOGGLE-GRAPHIC-', button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)]]
+              [sg.Text('Display annotations (On/Off):'),sg.Button('', image_data=toggle_btn_on, key='-TOGGLE-GRAPHIC-', button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],
+              [sg.Slider(orientation='h',enable_events=True, tick_interval=True, key='-SLIDER-')]
+              
+              
+              ]
     
     window = sg.Window('Webcam Window', layout, location=(0,0), resizable=True, size=(width*2, height*2))
 
@@ -78,6 +82,11 @@ def main():
             # flips graphic toggle
             display_annotations = not display_annotations
             window['-TOGGLE-GRAPHIC-'].update(image_data=toggle_btn_on if display_annotations else toggle_btn_off)
+        elif event == '-SLIDER-':
+            # get slider value and invert it for usable posture difficulty
+            difficulty = (int(values['-SLIDER-'])%10)
+
+
 
         if results.pose_landmarks:
             try:
@@ -92,9 +101,9 @@ def main():
                     torso_inclination = metrics['torso_inclination']
 
                     if event == 'snapshot_button':
-                        nrml_offset = (offset + difficulty)
-                        nrml_neck_inclination = (neck_inclination + difficulty)
-                        nrml_torso_inclination = (torso_inclination + difficulty)
+                        nrml_offset = offset
+                        nrml_neck_inclination = neck_inclination
+                        nrml_torso_inclination = torso_inclination
 
                         window['snapshot_text'].update((f"offset: {int(offset)} \
                               \nneck: {int(neck_inclination)} \
@@ -102,7 +111,7 @@ def main():
                         
 
             
-                    if offset < nrml_offset:
+                    if offset < (nrml_offset - difficulty) and offset >= (nrml_offset + difficulty):
                         cv2.putText(image, f'{int(offset)} Aligned', (10, height - 200), FONT, 0.9, GREEN, 2)
                     else:
                         cv2.putText(image, f'{int(offset)}\n Not Aligned', (10, height - 200), FONT, 0.9, RED, 2)
@@ -115,7 +124,7 @@ def main():
                     bad_time = (1 / fps) * bad_frames
                     
                     angle_text_string = f'Neck: {int(neck_inclination)}  Torso: {int(torso_inclination)}'
-                    if neck_inclination < nrml_neck_inclination and torso_inclination < nrml_torso_inclination:
+                    if (neck_inclination < (nrml_neck_inclination+difficulty) and neck_inclination >= (nrml_neck_inclination-difficulty)) and (torso_inclination < (nrml_torso_inclination+difficulty) and torso_inclination >= (nrml_torso_inclination-difficulty)):
                         color = LIGHT_GREEN
                         posture_status = 'Good'
                     else:
