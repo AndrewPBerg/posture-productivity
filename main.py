@@ -40,17 +40,26 @@ def main():
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
-    # initialize window
-    layout = [[sg.Image(filename='', key='image')],
-              [sg.Button(button_text='Click for Snapshot',tooltip='Click for Data Snapshot', key='snapshot_button'), sg.Text(text='',key='snapshot_text')],
-              [sg.Text('Display annotations (On/Off):'),sg.Button('', image_data=toggle_btn_on, key='-TOGGLE-GRAPHIC-', button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],
-              [sg.Slider(orientation='h',enable_events=True, tick_interval=True, key='-SLIDER-')]
-              
-              
-              ]
-    
-    window = sg.Window('Webcam Window', layout, location=(0,0), resizable=True, size=(width*2, height*2))
+    # Initialize Tabgroups
+    tab1_layout = [[sg.Text('Under Construction')]]
+    tab2_layout = [[sg.Button(button_text='Change The Baseline Posture To Current Frame',tooltip='Click to change default good posture values to your current posture', key='-BASELINE-BUTTON'), sg.Text(text='',key='-BASELINE-TEXT-')],
+                   [sg.Text('Posture Rigidity:'),sg.Slider(orientation='h',enable_events=True, key='-SLIDER-')]]
+    # tab3_layout = [[sg.Text]]
 
+    # Initialize column layouts
+    column1_layout = [[sg.Image(filename='', key='image')], [sg.Text('Display annotations (On/Off):'),sg.Button('', image_data=toggle_btn_on, key='-TOGGLE-GRAPHIC-', button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)]]
+    column2_layout = [[sg.Frame('Settings' ,layout=[[sg.TabGroup([[sg.Tab('Timer', tab1_layout)], [sg.Tab('Posture Setup', tab2_layout)]])]])]]
+    
+    # Initialize Window layout
+    layout = [
+        [sg.Column(scrollable=False, layout=column1_layout), sg.Column(scrollable=False, layout=column2_layout)]
+
+    ]
+
+    
+    
+    # initialize window
+    window = sg.Window('Webcam Window', layout, location=(0,0), resizable=True, size=(width*2, height*2))
 
     good_frames = 0
     bad_frames = 0
@@ -100,18 +109,18 @@ def main():
                     neck_inclination = metrics['neck_inclination']
                     torso_inclination = metrics['torso_inclination']
 
-                    if event == 'snapshot_button':
+                    if event == '-BASELINE-BUTTON':
                         nrml_offset = offset
                         nrml_neck_inclination = neck_inclination
                         nrml_torso_inclination = torso_inclination
 
-                        window['snapshot_text'].update((f"offset: {int(offset)} \
+                        window['-BASELINE-TEXT-'].update((f"offset: {int(offset)} \
                               \nneck: {int(neck_inclination)} \
                               \ntorso: {int(torso_inclination)}"))
                         
 
             
-                    if offset < (nrml_offset - difficulty) and offset >= (nrml_offset + difficulty):
+                    if offset < (nrml_offset - difficulty) or offset >= (nrml_offset + difficulty):
                         cv2.putText(image, f'{int(offset)} Aligned', (10, height - 200), FONT, 0.9, GREEN, 2)
                     else:
                         cv2.putText(image, f'{int(offset)}\n Not Aligned', (10, height - 200), FONT, 0.9, RED, 2)
@@ -124,7 +133,7 @@ def main():
                     bad_time = (1 / fps) * bad_frames
                     
                     angle_text_string = f'Neck: {int(neck_inclination)}  Torso: {int(torso_inclination)}'
-                    if (neck_inclination < (nrml_neck_inclination+difficulty) and neck_inclination >= (nrml_neck_inclination-difficulty)) and (torso_inclination < (nrml_torso_inclination+difficulty) and torso_inclination >= (nrml_torso_inclination-difficulty)):
+                    if (neck_inclination < (nrml_neck_inclination+difficulty) or neck_inclination >= (nrml_neck_inclination-difficulty)) and (torso_inclination < (nrml_torso_inclination+difficulty) or torso_inclination >= (nrml_torso_inclination-difficulty)):
                         color = LIGHT_GREEN
                         posture_status = 'Good'
                     else:
@@ -142,7 +151,8 @@ def main():
                         bad_frames += 1
 
                     if bad_time > POSTURE_WARNING_TIME:
-                        ic("BAD POSTURE Warning!")
+                        # ic("BAD POSTURE Warning!")
+                        pass
             except TypeError as e0:
                 ic(f"TYPE ERROR CAUGHT: {e0}")
             except UnboundLocalError as e1:
@@ -159,3 +169,5 @@ if __name__ == "__main__":
         main()
     else:
         print("This OS is not supported")
+
+
