@@ -1,18 +1,18 @@
-<h1 align="center">Project Title</h1>
+<h1 align="center">Posture Productivity</h1>
 
 <div align="center">
 
-[![Status](https://img.shields.io/badge/status-active-success.svg)]()
-[![GitHub Issues](https://img.shields.io/github/issues/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/kylelobo/The-Documentation-Compendium.svg)](https://github.com/AndrewPBerg/posture-productivity/pulls)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
-![License](https://img.shields.io/github/AndrewPBerg/posture-productivity/blob/main/LICENSE)
+[![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/AndrewPBerg/posture-productivity)](https://github.com/AndrewPBerg/posture-productivity/issues)
+[![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/AndrewPBerg/posture-productivity)
+](https://github.com/AndrewPBerg/posture-productivity/pulls)
+[![GitHub License](https://img.shields.io/github/license/AndrewPBerg/posture-productivity?color=teal)
+](/LICENSE)
 
 </div>
 
 ---
 
-<p align="center"> Few lines describing your project.
+<p align="center"> Helps users correct posture while sitting
     <br> 
 </p>
 
@@ -20,55 +20,50 @@
 
 - [About](#about)
 - [Getting Started](#getting_started)
-- [Deployment](#deployment)
-- [Usage](#usage)
 - [Built Using](#built_using)
 - [TODO](../TODO.md)
-- [Contributing](../CONTRIBUTING.md)
 - [Authors](#authors)
 - [Acknowledgments](#acknowledgement)
 
 ## 🧐 About <a name = "about"></a>
 
-Write about 1-2 paragraphs describing the purpose of your project.
+Posture Productivity is all about helping people work better while feeling better. This application helps the user correct their posture by alerting them when their posture is outside of the set boundaries. posture boundaries can be set by the user.
+
+In future iterations I hope to add a Pomodoro style timer that automatically takes/ends breaks based on if the user is in the frame. I also want the project to be as accessable to non-programmers as possible, so making the program a standard .exe file is also towards the top of my list.
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
-
 ### Prerequisites
 
-What things you need to install the software and how to install them.
-
-```
-Give examples
-```
+This repo uses Poetry for dependency managment. See [Poetry Introduction](https://python-poetry.org/docs/) to setup Poetry on your system.
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running.
+The requisite Poetry files are already located in the main branch, to get the poetry venv up and running:
 
-Say what the step will be
+#### 1. install required dependencies
 
+``` bash
+poetry install --no-root
 ```
-Give the example
+#### 2. install development dependencies (Optional)
+``` bash
+poetry install --no-root --with dev
+```
+#### 3. Verify install
+
+``` bash
+poetry show
 ```
 
-And repeat
-
+#### 4. Open the poetry .venv
+```bash
+poetry shell
 ```
-until finished
+To verify all everything is working:
+```bash
+python main.py
 ```
-
-End with an example of getting some data out of the system or using it for a little demo.
-
-## 🎈 Usage <a name="usage"></a>
-
-Add notes about how to use the system.
-
-## 🚀 Deployment <a name = "deployment"></a>
-
-Add additional notes about how to deploy this on a live system.
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 
@@ -84,6 +79,5 @@ Add additional notes about how to deploy this on a live system.
 
 ## 🎉 Acknowledgements <a name = "acknowledgement"></a>
 
-- Hat tip to anyone whose code was used
-- Inspiration
-- References
+- [@Iapetus-11](https://github.com/iapetus-11) - Ideas, Corrections, and Code Inspiration
+- [LearnOpenCV Posture Article](https://learnopencv.com/building-a-body-posture-analysis-system-using-mediapipe/) - Calculation Ideas
