@@ -6,6 +6,7 @@ from pose_utils import process_frame, calculate_posture_metrics
 from gui_functions import draw_posture_indicators, toggle_button_images
 from icecream import ic
 import warnings
+import cProfile
 
 # Suppresses a near-dated mediapipe dependency
 warnings.filterwarnings("ignore", category=UserWarning, module="google.protobuf")
@@ -26,16 +27,18 @@ def main():
     toggle_btn_off, toggle_btn_on = toggle_button_images() 
 
     # Initialize pose
-    pose = mp.solutions.pose.Pose()
+    pose = mp.solutions.pose.Pose(static_image_mode=False, model_complexity=0)
 
     # check if webcam opens
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     if not cap.isOpened():
         print("Error: Unable to access the camera")
         return
 
     # Get image metadata
-    cap.set(cv2.CAP_PROP_FPS, 30.0)
+    cap.set(cv2.CAP_PROP_FPS, 10.0)
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -46,7 +49,7 @@ def main():
                    [sg.Text('Posture Rigidity:'),sg.Slider(orientation='h',enable_events=True, key='-SLIDER-')]]
     # tab3_layout = [[sg.Text]]
 
-    # Initialize column layouts
+    # Initialize column layouts``
     column1_layout = [[sg.Image(filename='', key='image')], [sg.Text('Display annotations (On/Off):'),sg.Button('', image_data=toggle_btn_on, key='-TOGGLE-GRAPHIC-', button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)]]
     column2_layout = [[sg.Frame('Settings' ,layout=[[sg.TabGroup([[sg.Tab('Timer', tab1_layout)], [sg.Tab('Posture Setup', tab2_layout)]])]])]]
     
@@ -166,6 +169,7 @@ def main():
 
 if __name__ == "__main__":
     if running_windows or running_mac:
+        # cProfile.run('main()')
         main()
     else:
         print("This OS is not supported")
