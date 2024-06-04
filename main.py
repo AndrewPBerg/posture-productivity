@@ -6,7 +6,6 @@ from pose_utils import process_frame, calculate_posture_metrics
 from gui_functions import draw_posture_indicators, toggle_button_images
 from icecream import ic
 import warnings
-import cProfile
 
 # Suppresses a near-dated mediapipe dependency
 warnings.filterwarnings("ignore", category=UserWarning, module="google.protobuf")

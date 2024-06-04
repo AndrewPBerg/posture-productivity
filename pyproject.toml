@@ -19,6 +19,5 @@ optional = true
 ruff = "^0.4.6"
 
 [build-system]
-`requires = ["poetry-core"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-`

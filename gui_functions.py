@@ -1,6 +1,4 @@
 import cv2
-import PySimpleGUI as sg
-import mediapipe as mp
 
 def draw_posture_indicators(image, l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y, l_ear_x, l_ear_y, l_hip_x, l_hip_y, color):
     """
