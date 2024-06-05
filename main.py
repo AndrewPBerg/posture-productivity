@@ -3,7 +3,7 @@ import cv2
 import PySimpleGUI as sg
 import mediapipe as mp
 from pose_utils import process_frame, calculate_posture_metrics
-from gui_functions import draw_posture_indicators, toggle_button_images
+from gui_functions import draw_posture_indicators, toggle_button_images, alert_user
 from icecream import ic
 import warnings
 
@@ -155,6 +155,8 @@ def main():
                     if bad_time > POSTURE_WARNING_TIME:
                         # ic("BAD POSTURE Warning!")
                         pass
+                        # alert_user()
+
             except TypeError as e0:
                 ic(f"TYPE ERROR CAUGHT: {e0}")
             except UnboundLocalError as e1:

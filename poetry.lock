@@ -871,6 +871,17 @@ files = [
 ]
 
 [[package]]
+name = "pydub"
+version = "0.25.1"
+description = "Manipulate audio with an simple and easy high level interface"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pydub-0.25.1-py2.py3-none-any.whl", hash = "sha256:65617e33033874b59d87db603aa1ed450633288aefead953b30bded59cb599a6"},
+    {file = "pydub-0.25.1.tar.gz", hash = "sha256:980a33ce9949cab2a569606b65674d748ecbca4f0796887fd6f46173a7b0d30f"},
+]
+
+[[package]]
 name = "pygments"
 version = "2.18.0"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -1042,4 +1053,4 @@ numpy = ["NumPy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "31ce5775a7f403a5565d5b214be2c4181360a68011aaf4b5ea24b9da82539a6b"
+content-hash = "b3a075b211fedd3754ad8efe129cd42331294a7cf8380803f0e1041d97c7073d"

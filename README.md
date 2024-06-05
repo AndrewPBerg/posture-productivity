@@ -33,14 +33,18 @@ In future iterations I hope to add a Pomodoro style timer that automatically tak
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
-### Prerequisites
+
+
+### Pip Install
+
+```bash
+pip install -r requirements.txt
+```
+
+### (Optional) Poetry Install
+#### Prerequisites
 
 This repo uses Poetry for dependency managment. See [Poetry Introduction](https://python-poetry.org/docs/) to setup Poetry on your system.
-
-### Installing
-
-The requisite Poetry files are already located in the main branch, to get the poetry venv up and running:
-
 #### 1. install required dependencies
 
 ``` bash
