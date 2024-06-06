@@ -19,6 +19,12 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.6"
 
+[tool.ruff.lint]
+extend-select = ["Q", "COM"]
+# E and F are select defaults
+ignore = []
+preview = false
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
