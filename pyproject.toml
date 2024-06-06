@@ -5,6 +5,9 @@ description = ""
 authors = ["BergAndrew <berga2@gmail.com>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+main = "posture-app.main:main"
+
 [tool.poetry.dependencies]
 python = "^3.11"
 numpy = "^1.26.4"

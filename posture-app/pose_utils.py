@@ -37,7 +37,7 @@ def create_landmark_dict(pose_landmarks, landmark_name):
         `landmark_dict = create_landmark_dict(pose_landmarks, landmark)`
     """
     landmark_obj = pose_landmarks.landmark[landmark_name]
-    return {'x': landmark_obj.x, 'y': landmark_obj.y, 'z':landmark_obj.z, 'obj_name': landmark_name}
+    return {"x": landmark_obj.x, "y": landmark_obj.y, "z":landmark_obj.z, "obj_name": landmark_name}
 
 def output_values(pose_landmarks, landmark_list, display=True):
     """
@@ -146,17 +146,17 @@ def calculate_posture_metrics(pose, image):
     torso_inclination = findAngle(l_hip_x, l_hip_y, l_shldr_x, l_shldr_y)
 
     return {
-        'l_shldr_x': l_shldr_x,
-        'l_shldr_y': l_shldr_y,
-        'r_shldr_x': r_shldr_x,
-        'r_shldr_y': r_shldr_y,
-        'l_ear_x': l_ear_x,
-        'l_ear_y': l_ear_y,
-        'l_hip_x': l_hip_x,
-        'l_hip_y': l_hip_y,
-        'offset': offset,
-        'neck_inclination': neck_inclination,
-        'torso_inclination': torso_inclination
+        "l_shldr_x": l_shldr_x,
+        "l_shldr_y": l_shldr_y,
+        "r_shldr_x": r_shldr_x,
+        "r_shldr_y": r_shldr_y,
+        "l_ear_x": l_ear_x,
+        "l_ear_y": l_ear_y,
+        "l_hip_x": l_hip_x,
+        "l_hip_y": l_hip_y,
+        "offset": offset,
+        "neck_inclination": neck_inclination,
+        "torso_inclination": torso_inclination,
     }
 
 
