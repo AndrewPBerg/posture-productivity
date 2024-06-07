@@ -18,7 +18,6 @@ def main():
 
     # Colors
     RED = (50, 50, 255)
-    GREEN = (127, 255, 0)
     LIGHT_GREEN = (127, 233, 100)
 
     # used for of-off buttons
@@ -138,39 +137,35 @@ def main():
                         
 
 
-                    if display_annotations:
-                        color = LIGHT_GREEN if neck_inclination < nrml_neck_inclination and torso_inclination < nrml_torso_inclination else RED
-                        draw_posture_indicators(image, l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y, l_ear_x, l_ear_y, l_hip_x, l_hip_y, color)
 
+                    
                     good_time = (1 / fps) * good_frames
                     bad_time = (1 / fps) * bad_frames
-                    
 
-                    if display_data:
 
-                        angle_text_string = f"Neck: {int(neck_inclination)}  Torso: {int(torso_inclination)}"   
-                        cv2.putText(image, angle_text_string, (10, 30), FONT, 0.9, color, 2)
-                        cv2.putText(image, f"Good Posture Time: {round(good_time, 1)}s" if good_time > 0 else f"Bad Posture Time: {round(bad_time, 1)}s", (10, height - 20), FONT, 0.9, color, 2)
-
-                        if offset < (nrml_offset - difficulty) or offset >= (nrml_offset + difficulty):
-                            cv2.putText(image, f"{int(offset)} Aligned", (10, height - 200), FONT, 0.9, GREEN, 2)
-                        else:
-                            cv2.putText(image, f"{int(offset)}\n Not Aligned", (10, height - 200), FONT, 0.9, RED, 2)
-
-                    if (neck_inclination < (nrml_neck_inclination+difficulty) or neck_inclination >= (nrml_neck_inclination-difficulty)) and (torso_inclination < (nrml_torso_inclination+difficulty) or torso_inclination >= (nrml_torso_inclination-difficulty)):
+                    # ic(posture_status)
+                    if (neck_inclination < (nrml_neck_inclination+difficulty) or neck_inclination >= (nrml_neck_inclination-difficulty)) and (torso_inclination < (nrml_torso_inclination+difficulty) or torso_inclination >= (nrml_torso_inclination-difficulty)) and (offset < nrml_offset):
                         color = LIGHT_GREEN
-                        posture_status = "Good"
-                    else:
-                        color = RED
-                        posture_status = "Bad"
-
-                    if posture_status == "Good" and offset < nrml_offset:
                         bad_frames = 0
                         good_frames += 1
-                    else:
+                        
+                    else: 
+                        color = RED
                         good_frames = 0
                         bad_frames += 1
 
+
+                    if display_annotations:
+                        draw_posture_indicators(image, l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y, l_ear_x, l_ear_y, l_hip_x, l_hip_y, color)
+
+                    if display_data:
+                        cv2.putText(image, f"Neck: {int(neck_inclination)}  Torso: {int(torso_inclination)}", (10, 30), FONT, 0.9, color, 2)
+                        cv2.putText(image, f"Good Posture Time: {round(good_time, 1)}s" if good_time > 0 else f"Bad Posture Time: {round(bad_time, 1)}s", (10, height - 20), FONT, 0.9, color, 2)
+
+                        if color == LIGHT_GREEN:
+                            cv2.putText(image, f"{int(offset)} Aligned", (10, height - 200), FONT, 0.9, LIGHT_GREEN, 2)
+                        else:
+                            cv2.putText(image, f"{int(offset)}\n Not Aligned", (10, height - 200), FONT, 0.9, RED, 2)
                     if bad_time > POSTURE_WARNING_TIME:
                         # ic("BAD POSTURE Warning!")
                         pass
