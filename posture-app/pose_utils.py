@@ -77,7 +77,7 @@ def output_values(pose_landmarks, landmark_list, display=True):
     ic(result_landmark_dict)
     return result_landmark_dict
 
-def get_landmark_coordinates(landmarks, landmark_name, image_width, image_height):
+def get_landmark_coordinates(landmarks, landmark_name, image_width, image_height, calc_z=False):
     """
     ### Calculate a given landmarks x and y values relative to frames resolution 
 
@@ -100,6 +100,9 @@ def get_landmark_coordinates(landmarks, landmark_name, image_width, image_height
     try:
         x = int(landmarks.landmark[landmark_name].x * image_width)
         y = int(landmarks.landmark[landmark_name].y * image_height)
+        if calc_z:
+            z = int(landmarks.landmark[landmark_name].z * image_width)
+            return x, y, z
         return x, y
     except IndexError:
         # Handle case where the landmark is not found
@@ -133,13 +136,13 @@ def calculate_posture_metrics(pose, image):
     mp_landmarks = mp.solutions.pose.PoseLandmark
 
     # Calculate posture coordinates
-    l_shldr_x, l_shldr_y = get_landmark_coordinates(lm, mp_landmarks.LEFT_SHOULDER, w, h)
-    r_shldr_x, r_shldr_y = get_landmark_coordinates(lm, mp_landmarks.RIGHT_SHOULDER, w, h)
-    l_ear_x, l_ear_y = get_landmark_coordinates(lm, mp_landmarks.LEFT_EAR, w, h)
+    l_shldr_x, l_shldr_y, l_shldr_z = get_landmark_coordinates(lm, mp_landmarks.LEFT_SHOULDER, w, h, calc_z=True)
+    r_shldr_x, r_shldr_y, r_shldr_z= get_landmark_coordinates(lm, mp_landmarks.RIGHT_SHOULDER, w, h, calc_z=True)
+    l_ear_x, l_ear_y, l_ear_z = get_landmark_coordinates(lm, mp_landmarks.LEFT_EAR, w, h, calc_z=True)
     l_hip_x, l_hip_y = get_landmark_coordinates(lm, mp_landmarks.LEFT_HIP, w, h)
 
     # Calculate distance between left shoulder and right shoulder points
-    offset = findDistance(l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y)
+    shldr_distance = findDistance(l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y)
 
     # Calculate angles
     neck_inclination = findAngle(l_shldr_x, l_shldr_y, l_ear_x, l_ear_y)
@@ -148,15 +151,20 @@ def calculate_posture_metrics(pose, image):
     return {
         "l_shldr_x": l_shldr_x,
         "l_shldr_y": l_shldr_y,
+        # "l_shldr_z": l_shldr_z,
         "r_shldr_x": r_shldr_x,
         "r_shldr_y": r_shldr_y,
+        # "r_shldr_z": r_shldr_z,
         "l_ear_x": l_ear_x,
         "l_ear_y": l_ear_y,
+        # "l_ear_z": l_ear_z,
         "l_hip_x": l_hip_x,
         "l_hip_y": l_hip_y,
-        "offset": offset,
+        "shldr_distance": shldr_distance,
         "neck_inclination": neck_inclination,
         "torso_inclination": torso_inclination,
+        "closeness": abs((l_shldr_z + r_shldr_z + l_ear_z) / 3), # arithmetic mean of shldr + ear z's
+        "shldr_level": abs(l_shldr_y - r_shldr_y),
     }
 
 
