@@ -1,6 +1,5 @@
 import cv2
-from pydub import AudioSegment
-from pydub.playback import play
+from pygame import mixer
 
 def draw_posture_indicators(image, l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y, l_ear_x, l_ear_y, l_hip_x, l_hip_y, color):
     """
@@ -41,22 +40,10 @@ def toggle_button_images():
     return toggle_btn_off, toggle_btn_on
 
 def alert_user():
-
-    song =  AudioSegment.from_wav("bell-notif.wav")
-
-    three_seconds = 3 * 1000 # 3 second x 1000 ms
-    first_3_seconds = song[:three_seconds]
-
-    notification = first_3_seconds -10
-
-    play(notification)
-
-    # with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmpfile:
-    #     notification.export(tmpfile.name, format="wav")
-    #     temp_filename = tmpfile.name
-
-    # Play the audio file
-    # playsound('bell-notif.wav')
+    mixer.init()
+    mixer.music.load("bell-notif.wav")
+    mixer.music.set_volume(0.2)
+    mixer.music.play(fade_ms=10)
 
 def main():
     alert_user()

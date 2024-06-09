@@ -3,7 +3,7 @@ import cv2
 import PySimpleGUI as sg
 import mediapipe as mp
 from pose_utils import process_frame, calculate_posture_metrics
-from gui_functions import draw_posture_indicators, toggle_button_images
+from gui_functions import draw_posture_indicators, toggle_button_images, alert_user
 from icecream import ic
 import warnings
 
@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="google.protobuf"
 def main():
     # APP posture limits
 
-    # total_time = 0
+    total_time = 0
     total_frames = 0
     POSTURE_WARNING_TIME = 2
 
@@ -76,10 +76,11 @@ def main():
                               \nshldr distance {int(my_shldr_distance)}",
                               key="-DEBUG-POSTURE-TEXT-")],
                    [sg.Button(button_text="Change The Baseline Posture To Current Frame",tooltip="Click to change default good posture values to your current posture", key="-BASELINE-BUTTON2")]]
-
+    tab4_layout = [[sg.Text("Notification Settings:")],
+                   [sg.Text("Audio Notifications (On/Off):")],[sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-AUDIO-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],]
     # Initialize column layouts``
     column1_layout = [[sg.Image(filename="", key="image")]]
-    column2_layout = [[sg.Frame("Settings" ,layout=[[sg.TabGroup([[sg.Tab("Timer", tab1_layout)], [sg.Tab("Posture Setup", tab2_layout)], [(sg.Tab("Debug", tab3_layout))]])]])]]
+    column2_layout = [[sg.Frame("Settings" ,layout=[[sg.TabGroup([[sg.Tab("Timer", tab1_layout)], [sg.Tab("Posture Setup", tab2_layout)], [(sg.Tab("Debug", tab3_layout))], [(sg.Tab("Notifications", tab4_layout))]])]])]]
     
     # Initialize Window layout
     layout = [
@@ -96,8 +97,10 @@ def main():
     bad_frames = 0
     display_annotations = True
     display_data = True
+    play_audio = True
 
-
+    alert_interval = 5  # Minimum interval between alerts in seconds
+    last_alert_time = 0  # Tracks the last time the alert was played
 
     while True:
         
@@ -120,6 +123,9 @@ def main():
         elif event == "-TOGGLE-DATA-":
             display_data = not display_data
             window["-TOGGLE-DATA-"].update(image_data=toggle_btn_on if display_data else toggle_btn_off)
+        elif event == "-TOGGLE-AUDIO-":
+            play_audio  = not play_audio
+            window["-TOGGLE-AUDIO-"].update(image_data=toggle_btn_on if play_audio else toggle_btn_off)
         elif event == "-SLIDER-":
             # get slider value and invert it for usable posture Easiness
             easiness = (int(values["-SLIDER-"]) % 11)
@@ -155,27 +161,40 @@ def main():
                         
                     good_time = good_frames/fps
                     bad_time = bad_frames/fps
-                    # total_time = total_frames/fps
 
-                    if closeness + (easiness*50) > my_closeness > closeness - (easiness*50):
+                    good_closeness = True
+                    good_shldr = True
+                    good_neck = True
+
+                    if closeness + (easiness * 50) > my_closeness > closeness - (easiness * 50):
                         closeness_color = LIGHT_GREEN
-                        if neck_inclination + easiness*2 > nrml_neck_inclination> neck_inclination - easiness*2:
-                            neck_color = LIGHT_GREEN
-                            if shldr_level+easiness+2> my_shldr_level > shldr_level-easiness-2:
-                                color = LIGHT_GREEN
-                                shldr_level_color = LIGHT_GREEN
-                                bad_frames = 0
-                                good_frames += 1
-                                total_frames +=1
-                        
-                    else: 
-                        color = RED
-                        neck_color = RED
+                    else:
                         closeness_color = RED
+                        good_closeness = False
+
+                    if neck_inclination + easiness * 2 > nrml_neck_inclination > neck_inclination - easiness * 2:
+                        neck_color = LIGHT_GREEN
+                    else:
+                        neck_color = RED
+                        good_shldr = False
+
+                    if shldr_level + easiness + 2 > my_shldr_level > shldr_level - easiness - 2:
+                        color = LIGHT_GREEN
+                        shldr_level_color = LIGHT_GREEN
+                    else:
                         shldr_level_color = RED
+                        good_neck = False
+
+                    if good_closeness and good_shldr and good_neck:
+                        color = LIGHT_GREEN
+                        bad_frames = 0
+                        good_frames += 1
+                    else:
+                        color = RED
                         good_frames = 0
                         bad_frames += 1
-                        total_frames += 1
+
+                    total_frames += 1
 
 
                     if display_annotations:
@@ -188,9 +207,11 @@ def main():
                         cv2.putText(image, f"Good Posture Time: {round(good_time, 1)}s" if good_time > 0 else f"Bad Posture Time: {round(bad_time, 1)}s", (10, height - 20), FONT, 0.9, color, 2)
 
                     if bad_time > POSTURE_WARNING_TIME:
-                        # ic("BAD POSTURE Warning!")
-                        pass
-                        # alert_user()
+                        total_time = total_frames/fps
+                        if total_time - last_alert_time > alert_interval:
+                            last_alert_time = total_time
+                            if play_audio:
+                                alert_user()
 
             except TypeError as e0:
                 ic(f"TYPE ERROR CAUGHT: {e0}")
