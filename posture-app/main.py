@@ -12,6 +12,9 @@ warnings.filterwarnings("ignore", category=UserWarning, module="google.protobuf"
 
 def main():
     # APP posture limits
+
+    # total_time = 0
+    total_frames = 0
     POSTURE_WARNING_TIME = 2
 
     FONT = cv2.FONT_HERSHEY_SIMPLEX
@@ -19,6 +22,11 @@ def main():
     # Colors
     RED = (50, 50, 255)
     LIGHT_GREEN = (127, 233, 100)
+    color = (247, 245, 245)
+    neck_color = (247, 245, 245)
+    closeness_color = (247, 245, 245)
+    shldr_level_color = (247, 245, 245)
+
 
     # used for of-off buttons
     # get the base64 strings for the button images
@@ -28,12 +36,15 @@ def main():
     pose = mp.solutions.pose.Pose(static_image_mode=False, model_complexity=0)
 
     # default values set for offset and inclination conditions
-    nrml_offset = 300
-    nrml_neck_inclination = 40
-    nrml_torso_inclination = 10
+    nrml_offset = 260
+    nrml_neck_inclination = 20
+    nrml_torso_inclination = 4
+    my_closeness = 500
+    my_shldr_distance = 270
+    my_shldr_level = 0
 
     # Used to adjust the posture conditionals
-    difficulty = 0
+    easiness = 5
 
     # check if webcam opens
     cap = cv2.VideoCapture(0)
@@ -46,21 +57,25 @@ def main():
     # Get image metadata
     cap.set(cv2.CAP_PROP_FPS, 10.0)
     fps = int(cap.get(cv2.CAP_PROP_FPS))
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    # width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
     # Initialize Tabgroups
     tab1_layout = [[sg.Text("Under Construction")]]
     tab2_layout = [[sg.Button(button_text="Change The Baseline Posture To Current Frame",tooltip="Click to change default good posture values to your current posture", key="-BASELINE-BUTTON")],
-                   [sg.Text("Posture Rigidity:"),sg.Slider(orientation="h",enable_events=True, key="-SLIDER-")]]
+                   [sg.Text("'Laxness:"),sg.Slider(default_value=5, orientation="h",enable_events=True, key="-SLIDER-")]]
     tab3_layout = [[sg.Text("Debug Settings:")],
                    [sg.Text("Display annotations (On/Off):")],[sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-ANNOTATIONS-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],
                    [sg.Text("Display Posture Data (On/Off):")],[sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-DATA-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],
                    [sg.Text("Baseline posture data: ")], [sg.Text(f"offset: {int(nrml_offset)} \
                               \nneck: {int(nrml_neck_inclination)} \
                               \ntorso: {int(nrml_torso_inclination)}\
-                              \ndifficulty {difficulty}",
-                              key="-DEBUG-POSTURE-TEXT-")]]
+                              \nEasiness {easiness}\
+                              \nCloseness {int(my_closeness)}\
+                              \nShldr level {int(my_shldr_level)}\
+                              \nshldr distance {int(my_shldr_distance)}",
+                              key="-DEBUG-POSTURE-TEXT-")],
+                   [sg.Button(button_text="Change The Baseline Posture To Current Frame",tooltip="Click to change default good posture values to your current posture", key="-BASELINE-BUTTON2")]]
 
     # Initialize column layouts``
     column1_layout = [[sg.Image(filename="", key="image")]]
@@ -75,7 +90,7 @@ def main():
     
     
     # initialize window
-    window = sg.Window("Webcam Window", layout, location=(0,0), resizable=True, size=(width*2, height*2))
+    window = sg.Window("Webcam Window", layout, location=(0,0), resizable=True, size=(1000,700))
 
     good_frames = 0
     bad_frames = 0
@@ -106,66 +121,72 @@ def main():
             display_data = not display_data
             window["-TOGGLE-DATA-"].update(image_data=toggle_btn_on if display_data else toggle_btn_off)
         elif event == "-SLIDER-":
-            # get slider value and invert it for usable posture difficulty
-            difficulty = (int(values["-SLIDER-"]) % 11)
-
-
-
-
+            # get slider value and invert it for usable posture Easiness
+            easiness = (int(values["-SLIDER-"]) % 11)
 
         if results.pose_landmarks:
             try:
                 metrics = calculate_posture_metrics(pose, image)
                 if metrics:
                     l_shldr_x, l_shldr_y = metrics["l_shldr_x"], metrics["l_shldr_y"]
-                    r_shldr_x, r_shldr_y= metrics["r_shldr_x"], metrics["r_shldr_y"]
+                    r_shldr_x, r_shldr_y = metrics["r_shldr_x"], metrics["r_shldr_y"]
                     l_ear_x, l_ear_y = metrics["l_ear_x"], metrics["l_ear_y"]
                     l_hip_x, l_hip_y = metrics["l_hip_x"], metrics["l_hip_y"]
-                    offset = metrics["offset"]
+                    shldr_distance = metrics["shldr_distance"]
                     neck_inclination = metrics["neck_inclination"]
                     torso_inclination = metrics["torso_inclination"]
+                    closeness = metrics["closeness"]
+                    shldr_level = metrics["shldr_level"]
 
-                    if event == "-BASELINE-BUTTON":
-                        nrml_offset = offset
+                    if event == "-BASELINE-BUTTON" or event == "-BASELINE-BUTTON2":
                         nrml_neck_inclination = neck_inclination
                         nrml_torso_inclination = torso_inclination
+                        my_shldr_distance = shldr_distance
+                        my_closeness = closeness
+                        my_shldr_level = shldr_level
 
                         window["-DEBUG-POSTURE-TEXT-"].update(f"offset: {int(nrml_offset)} \
                               \nneck: {int(nrml_neck_inclination)} \
                               \ntorso: {int(nrml_torso_inclination)} \
-                              \ndifficulty {difficulty}")
+                              \nEasiness {int(easiness)} \
+                              \nCloseness {int(my_closeness)} \
+                              \nShldr level {int(my_shldr_level)} \
+                              \nshldr distance {int(my_shldr_distance)}")
                         
+                    good_time = good_frames/fps
+                    bad_time = bad_frames/fps
+                    # total_time = total_frames/fps
 
-
-
-                    
-                    good_time = (1 / fps) * good_frames
-                    bad_time = (1 / fps) * bad_frames
-
-
-                    # ic(posture_status)
-                    if (neck_inclination < (nrml_neck_inclination+difficulty) or neck_inclination >= (nrml_neck_inclination-difficulty)) and (torso_inclination < (nrml_torso_inclination+difficulty) or torso_inclination >= (nrml_torso_inclination-difficulty)) and (offset < nrml_offset):
-                        color = LIGHT_GREEN
-                        bad_frames = 0
-                        good_frames += 1
+                    if closeness + (easiness*50) > my_closeness > closeness - (easiness*50):
+                        closeness_color = LIGHT_GREEN
+                        if neck_inclination + easiness*2 > nrml_neck_inclination> neck_inclination - easiness*2:
+                            neck_color = LIGHT_GREEN
+                            if shldr_level+easiness+2> my_shldr_level > shldr_level-easiness-2:
+                                color = LIGHT_GREEN
+                                shldr_level_color = LIGHT_GREEN
+                                bad_frames = 0
+                                good_frames += 1
+                                total_frames +=1
                         
                     else: 
                         color = RED
+                        neck_color = RED
+                        closeness_color = RED
+                        shldr_level_color = RED
                         good_frames = 0
                         bad_frames += 1
+                        total_frames += 1
 
 
                     if display_annotations:
                         draw_posture_indicators(image, l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y, l_ear_x, l_ear_y, l_hip_x, l_hip_y, color)
 
                     if display_data:
-                        cv2.putText(image, f"Neck: {int(neck_inclination)}  Torso: {int(torso_inclination)}", (10, 30), FONT, 0.9, color, 2)
+                        cv2.putText(image, f"Neck: {int(neck_inclination)}", (10, 30), FONT, 0.9, neck_color, 2)
+                        cv2.putText(image, f"shldr_level: {shldr_level}", (10, 60), FONT, 0.9, shldr_level_color, 2)
+                        cv2.putText(image, f"Closeness: {int(closeness)}", (10, 90), FONT, 0.9, closeness_color, 2)
                         cv2.putText(image, f"Good Posture Time: {round(good_time, 1)}s" if good_time > 0 else f"Bad Posture Time: {round(bad_time, 1)}s", (10, height - 20), FONT, 0.9, color, 2)
 
-                        if color == LIGHT_GREEN:
-                            cv2.putText(image, f"{int(offset)} Aligned", (10, height - 200), FONT, 0.9, LIGHT_GREEN, 2)
-                        else:
-                            cv2.putText(image, f"{int(offset)}\n Not Aligned", (10, height - 200), FONT, 0.9, RED, 2)
                     if bad_time > POSTURE_WARNING_TIME:
                         # ic("BAD POSTURE Warning!")
                         pass
@@ -182,7 +203,7 @@ def main():
     cap.release()
     window.close()
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     if running_windows or running_mac:
         # cProfile.run('main()')
         main()

@@ -20,13 +20,14 @@ def draw_posture_indicators(image, l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y, l
 
     cv2.circle(image, (l_shldr_x, l_shldr_y), 7, YELLOW, -1)
     cv2.circle(image, (l_ear_x, l_ear_y), 7, YELLOW, -1)
-    cv2.circle(image, (l_shldr_x, l_shldr_y - 100), 7, YELLOW, -1)
+    # cv2.circle(image, (l_shldr_x, l_shldr_y - 100), 7, YELLOW, -1)
     cv2.circle(image, (r_shldr_x, r_shldr_y), 7, PINK, -1)
     cv2.circle(image, (l_hip_x, l_hip_y), 7, YELLOW, -1)
     cv2.circle(image, (l_hip_x, l_hip_y - 100), 7, YELLOW, -1)
 
     cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), color, 4)
-    cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - 100), color, 4)
+    cv2.line(image, (l_shldr_x, l_shldr_y), (r_shldr_x, r_shldr_y), color, 4)
+    # cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - 100), color, 4)
     cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), color, 4)
     cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - 100), color, 4)
 
