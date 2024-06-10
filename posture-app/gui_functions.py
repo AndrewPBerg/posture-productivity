@@ -1,5 +1,7 @@
 import cv2
 from pygame import mixer
+import PySimpleGUI as sg
+import time
 
 def draw_posture_indicators(image, l_shldr_x, l_shldr_y, r_shldr_x, r_shldr_y, l_ear_x, l_ear_y, l_hip_x, l_hip_y, color):
     """
@@ -41,12 +43,90 @@ def toggle_button_images():
 
 def alert_user():
     mixer.init()
-    mixer.music.load("bell-notif.wav")
+    # mixer.music.load("bell-notif.wav")
+    mixer.music.load("buzz-notif.mp3")
+    # try:
+    #     mixer.music.load(audio_file)
+    # except FileNotFoundError as e:
+    #     print("file not found", e)
     mixer.music.set_volume(0.2)
     mixer.music.play(fade_ms=10)
 
+def timer():
+# Function to format the time
+    def format_time(seconds):
+        return time.strftime('%H:%M:%S', time.gmtime(seconds))
+
+    # Define time options
+
+    # Define the layout of the window
+    layout = [
+        [sg.Text('Set Timer (minutes):'), sg.Combo(values=['20','25','30','35'], key='-TIMER-',  default_value='25')],
+        [sg.Text('Short Break (minutes):'), sg.Combo(['1','3','5'], key='-SHORTBREAK-',  default_value='3')],
+        [sg.Text('Long Break (minutes):'), sg.Combo(['15','20','25','30'], key='-LONGBREAK-', default_value='20')],
+        [sg.Text('Countdown Timer:', size=(15, 1)), sg.Text('', size=(8, 1), key='-DISPLAYTIMER-')],
+        [sg.Button('Start'), sg.Button('Stop'), sg.Button('Reset'), sg.Button('Exit')]
+    ]
+
+    # Create the window
+    window = sg.Window('Countdown Timer Example', layout)
+
+    # Initialize timer variables
+    running = False
+    start_time = 0
+    remaining_time = 0
+    timer_type = 'Timer'  # To track which timer is running
+
+    # Event loop
+    while True:
+        event, values = window.read(timeout=10)  # Read with a timeout to update the timer
+        current_time = time.time()
+
+        if event in (sg.WIN_CLOSED, 'Exit'):
+            break
+
+        if event == 'Start':
+            if not running:
+                try:
+                    if values['-TIMER-']:
+                        remaining_time = int(values['-TIMER-']) * 60
+                        timer_type = 'Timer'
+                    elif values['-SHORTBREAK-']:
+                        remaining_time = int(values['-SHORTBREAK-']) * 60
+                        timer_type = 'Short Break'
+                    elif values['-LONGBREAK-']:
+                        remaining_time = int(values['-LONGBREAK-']) * 60
+                        timer_type = 'Long Break'
+                    else:
+                        sg.popup('Please select a time for the countdown, short break, or long break')
+                        continue
+                    start_time = current_time
+                    running = True
+                except ValueError:
+                    sg.popup('Please select a valid number of minutes')
+
+        if event == 'Stop':
+            if running:
+                running = False
+
+        if event == 'Reset':
+            running = False
+            remaining_time = 0
+            window['-DISPLAYTIMER-'].update(format_time(remaining_time))
+
+        if running:
+            elapsed_time = current_time - start_time
+            time_left = remaining_time - elapsed_time
+            if time_left <= 0:
+                running = False
+                time_left = 0
+            window['-DISPLAYTIMER-'].update(format_time(time_left))
+
+    window.close()
+
+
 def main():
-    alert_user()
+    timer()
 
 if __name__ == "__main__":
     main()

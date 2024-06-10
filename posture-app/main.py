@@ -15,7 +15,7 @@ def main():
 
     total_time = 0
     total_frames = 0
-    POSTURE_WARNING_TIME = 2
+    POSTURE_WARNING_TIME = 5
 
     FONT = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -37,11 +37,11 @@ def main():
 
     # default values set for offset and inclination conditions
     nrml_offset = 260
-    nrml_neck_inclination = 20
+    nrml_neck_inclination = 30
     nrml_torso_inclination = 4
-    my_closeness = 500
+    my_closeness = 420
     my_shldr_distance = 270
-    my_shldr_level = 0
+    my_shldr_level = 10
 
     # Used to adjust the posture conditionals
     easiness = 5
@@ -166,19 +166,20 @@ def main():
                     good_shldr = True
                     good_neck = True
 
-                    if closeness + (easiness * 50) > my_closeness > closeness - (easiness * 50):
+                    if closeness + (easiness * 20) > my_closeness > closeness - (easiness * 50):
                         closeness_color = LIGHT_GREEN
                     else:
                         closeness_color = RED
                         good_closeness = False
 
-                    if neck_inclination + easiness * 2 > nrml_neck_inclination > neck_inclination - easiness * 2:
+                    if neck_inclination + easiness + 5 > nrml_neck_inclination > neck_inclination - easiness + 5:
                         neck_color = LIGHT_GREEN
                     else:
                         neck_color = RED
-                        good_shldr = False
+                        good_neck = False
+                        # good_neck = True
 
-                    if shldr_level + easiness + 2 > my_shldr_level > shldr_level - easiness - 2:
+                    if shldr_level + easiness * 5 > my_shldr_level > shldr_level - easiness * 5:
                         color = LIGHT_GREEN
                         shldr_level_color = LIGHT_GREEN
                     else:
@@ -212,6 +213,10 @@ def main():
                             last_alert_time = total_time
                             if play_audio:
                                 alert_user()
+                                # try:
+                                    # alert_user("buzz-notif.mp3")
+                                # except:
+                                #     alert_user("posture-app/buss-notif.mp3")
 
             except TypeError as e0:
                 ic(f"TYPE ERROR CAUGHT: {e0}")
