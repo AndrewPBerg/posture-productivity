@@ -58,6 +58,10 @@ def timer():
     def format_time(seconds):
         return time.strftime('%H:%M:%S', time.gmtime(seconds))
     
+    def get_pomodoro() -> list:
+        return ["Timer","Short Break","Timer","Short Break","Timer","Long Break","Done"]
+
+    
     def get_remaining_time(timer_type) -> int:
         try:
             if timer_type == 'Timer':
@@ -68,13 +72,15 @@ def timer():
                 return int(values['-LONGBREAK-']) * 60
             elif timer_type == 'Done':
                 # what to do when done with the timer
-                pass
+                sg.popup(f"You completed a work cycle!")
+                return -1
                 
         except ValueError as e:
             sg.popup(f'Please select a valid number of minutes \n{e}')
     
     # Define Pomodoro layout
-    pomodoro = ["Timer","Short Break","Timer","Short Break","Timer","Long Break","Done"]
+    pomodoro = get_pomodoro()
+    
 
     # Define the layout of the window
     layout = [
@@ -82,13 +88,15 @@ def timer():
         [sg.Text('Short Break (minutes):'), sg.Combo(['1','3','5'], key='-SHORTBREAK-',  default_value='3')],
         [sg.Text('Long Break (minutes):'), sg.Combo(['15','20','25','30'], key='-LONGBREAK-', default_value='35')],
         [sg.Text('Countdown Timer:', size=(15, 1)), sg.Text('', size=(8, 1), key='-DISPLAYTIMER-')],
-        [sg.Button('Start'), sg.Button('Stop'), sg.Button('Reset'), sg.Button('Exit'), sg.Button('Next')]
+        [sg.Button('Start'), sg.Button('(Un)Pause'), sg.Button('Reset'), sg.Button('Exit'), sg.Button('Next')]
     ]
 
     # Create the window
     window = sg.Window('Countdown Timer Example', layout)
 
     # Initialize timer variables
+    pause_time = 0
+    pause = False
     running = False
     start_time = 0
     remaining_time = 0
@@ -110,30 +118,41 @@ def timer():
                 remaining_time = get_remaining_time(pomodoro.pop(0)) # pop's which timer type is next
 
 
-        if event == 'Stop':
-            if running:
+        if event == '(Un)Pause':
+            pause = not pause
+            pause_time = time.time()
+            if running and pause:
                 running = False
+                # current_time = time.time()
+            else:
+
+                running = True
+                
         if event == 'Next':
             timer_type = pomodoro.pop(0)
             if timer_type is not None:
                 remaining_time = get_remaining_time(timer_type) # pop's which timer type is next
             else:
                 event = 'Reset'
-        if pomodoro == "Done":
-            event = 'Reset'
+
         if event == 'Reset':
             running = False
             remaining_time = 0
+            pomodoro = get_pomodoro()
             window['-DISPLAYTIMER-'].update(format_time(remaining_time))
 
 
         if running:
-
-            elapsed_time = current_time - start_time
+            if pause_time > 0:
+                elapsed_time = pause_time - start_time
+            else:
+                elapsed_time = current_time - start_time
             time_left = remaining_time - elapsed_time
+            # pause_time = 0
             if time_left <= 0:
                 running = False
                 time_left = 0
+                pomodoro = get_pomodoro()
             window['-DISPLAYTIMER-'].update(format_time(time_left))
 
     window.close()
