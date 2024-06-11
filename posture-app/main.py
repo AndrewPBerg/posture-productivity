@@ -3,7 +3,7 @@ import cv2
 import PySimpleGUI as sg
 import mediapipe as mp
 from pose_utils import process_frame, calculate_posture_metrics
-from gui_functions import draw_posture_indicators, toggle_button_images, alert_user
+from gui_functions import draw_posture_indicators, toggle_button_images, alert_user, Timer
 from icecream import ic
 import warnings
 
@@ -15,7 +15,7 @@ def main():
 
     total_time = 0
     total_frames = 0
-    POSTURE_WARNING_TIME = 2
+    POSTURE_WARNING_TIME = 5
 
     FONT = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -37,11 +37,11 @@ def main():
 
     # default values set for offset and inclination conditions
     nrml_offset = 260
-    nrml_neck_inclination = 20
+    nrml_neck_inclination = 30
     nrml_torso_inclination = 4
-    my_closeness = 500
+    my_closeness = 420
     my_shldr_distance = 270
-    my_shldr_level = 0
+    my_shldr_level = 10
 
     # Used to adjust the posture conditionals
     easiness = 5
@@ -61,7 +61,14 @@ def main():
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
     # Initialize Tabgroups
-    tab1_layout = [[sg.Text("Under Construction")]]
+    tab1_layout = [
+        [sg.Text("Set Timer (minutes):"), sg.Combo(values=["20","25","30","35"], key="-TIMER-",  default_value="25")],
+        [sg.Text("Short Break (minutes):"), sg.Combo(["1","3","5"], key="-SHORTBREAK-",  default_value="3")],
+        [sg.Text("Long Break (minutes):"), sg.Combo(["15","20","25","30"], key="-LONGBREAK-", default_value="35")],
+        [sg.Text("Countdown Timer:", size=(15, 1)), sg.Text("", size=(8, 1), key="-DISPLAYTIMER-")],
+        [sg.Button("Start"), sg.Button("(Un)Pause"), sg.Button("Reset"), sg.Button("Next")],
+        [sg.Text("", key=("-DONE-KEY-"))],
+    ]
     tab2_layout = [[sg.Button(button_text="Change The Baseline Posture To Current Frame",tooltip="Click to change default good posture values to your current posture", key="-BASELINE-BUTTON")],
                    [sg.Text("'Laxness:"),sg.Slider(default_value=5, orientation="h",enable_events=True, key="-SLIDER-")]]
     tab3_layout = [[sg.Text("Debug Settings:")],
@@ -77,7 +84,7 @@ def main():
                               key="-DEBUG-POSTURE-TEXT-")],
                    [sg.Button(button_text="Change The Baseline Posture To Current Frame",tooltip="Click to change default good posture values to your current posture", key="-BASELINE-BUTTON2")]]
     tab4_layout = [[sg.Text("Notification Settings:")],
-                   [sg.Text("Audio Notifications (On/Off):")],[sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-AUDIO-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],]
+                   [sg.Text("Audio Notifications (On/Off):")],[sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-AUDIO-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)]]
     # Initialize column layouts``
     column1_layout = [[sg.Image(filename="", key="image")]]
     column2_layout = [[sg.Frame("Settings" ,layout=[[sg.TabGroup([[sg.Tab("Timer", tab1_layout)], [sg.Tab("Posture Setup", tab2_layout)], [(sg.Tab("Debug", tab3_layout))], [(sg.Tab("Notifications", tab4_layout))]])]])]]
@@ -102,6 +109,8 @@ def main():
     alert_interval = 5  # Minimum interval between alerts in seconds
     last_alert_time = 0  # Tracks the last time the alert was played
 
+    timer = Timer(window)
+
     while True:
         
         success, image = cap.read()
@@ -113,6 +122,13 @@ def main():
         results, image = process_frame(image, pose)
 
         event, values = window.read(timeout=20)
+
+        if event is not None and values is not None:
+            
+            timer.check_buttons(values, event)
+            timer.update_timer()
+
+        # if timer is running calculate and update time
 
         if event == sg.WINDOW_CLOSED:
             break
@@ -166,19 +182,20 @@ def main():
                     good_shldr = True
                     good_neck = True
 
-                    if closeness + (easiness * 50) > my_closeness > closeness - (easiness * 50):
+                    if closeness + (easiness * 20) > my_closeness > closeness - (easiness * 50):
                         closeness_color = LIGHT_GREEN
                     else:
                         closeness_color = RED
                         good_closeness = False
 
-                    if neck_inclination + easiness * 2 > nrml_neck_inclination > neck_inclination - easiness * 2:
+                    if neck_inclination + easiness + 5 > nrml_neck_inclination > neck_inclination - easiness + 5:
                         neck_color = LIGHT_GREEN
                     else:
                         neck_color = RED
-                        good_shldr = False
+                        good_neck = False
+                        # good_neck = True
 
-                    if shldr_level + easiness + 2 > my_shldr_level > shldr_level - easiness - 2:
+                    if shldr_level + easiness * 5 > my_shldr_level > shldr_level - easiness * 5:
                         color = LIGHT_GREEN
                         shldr_level_color = LIGHT_GREEN
                     else:
@@ -212,6 +229,10 @@ def main():
                             last_alert_time = total_time
                             if play_audio:
                                 alert_user()
+                                # try:
+                                    # alert_user("buzz-notif.mp3")
+                                # except:
+                                #     alert_user("posture-app/buss-notif.mp3")
 
             except TypeError as e0:
                 ic(f"TYPE ERROR CAUGHT: {e0}")
