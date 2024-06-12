@@ -183,6 +183,8 @@ class Timer:
     def check_buttons(self, values, event: str):
         if event == "Start":
             ic("start pressed")
+            self.window["-DONE-KEY-"].update("")
+            
             if not Timer.running:
                 Timer.start_time = time.time()
                 Timer.running = True

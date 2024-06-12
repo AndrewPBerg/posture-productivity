@@ -4,6 +4,7 @@ import PySimpleGUI as sg
 import mediapipe as mp
 from pose_utils import process_frame, calculate_posture_metrics
 from gui_functions import draw_posture_indicators, toggle_button_images, alert_user, Timer
+from posture_boolean import is_standing
 from icecream import ic
 import warnings
 
@@ -82,6 +83,7 @@ def main():
                               \nShldr level {int(my_shldr_level)}\
                               \nshldr distance {int(my_shldr_distance)}",
                               key="-DEBUG-POSTURE-TEXT-")],
+                   [sg.Text("Standing/Sitting:"), sg.Text("", key="-STANDING-SITTING-DEBUG-")],
                    [sg.Button(button_text="Change The Baseline Posture To Current Frame",tooltip="Click to change default good posture values to your current posture", key="-BASELINE-BUTTON2")]]
     tab4_layout = [[sg.Text("Notification Settings:")],
                    [sg.Text("Audio Notifications (On/Off):")],[sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-AUDIO-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)]]
@@ -146,6 +148,10 @@ def main():
             # get slider value and invert it for usable posture Easiness
             easiness = (int(values["-SLIDER-"]) % 11)
 
+        if is_standing(results.pose_landmarks):
+            window["-STANDING-SITTING-DEBUG-"].update("Standing")
+        else:
+            window["-STANDING-SITTING-DEBUG-"].update("Sitting")
         if results.pose_landmarks:
             try:
                 metrics = calculate_posture_metrics(pose, image)
@@ -181,6 +187,7 @@ def main():
                     good_closeness = True
                     good_shldr = True
                     good_neck = True
+                    
 
                     if closeness + (easiness * 20) > my_closeness > closeness - (easiness * 50):
                         closeness_color = LIGHT_GREEN
