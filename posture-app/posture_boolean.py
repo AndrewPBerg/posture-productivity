@@ -82,5 +82,5 @@ def is_standing(pose_landmarks, standing_threshold=0.08):
             standing = True
         
         return standing
-    except:
+    except TypeError:
         return True

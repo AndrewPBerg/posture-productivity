@@ -182,42 +182,42 @@ class Timer:
 
     def check_buttons(self, values, event: str):
         if event == "Start":
-            ic("start pressed")
+            # ic("start pressed")
             self.window["-DONE-KEY-"].update("")
             
             if not Timer.running:
                 Timer.start_time = time.time()
                 Timer.running = True
                 Timer.remaining_time = self.__get_remaining_time(values,Timer.pomodoro.pop(0)) # pop's which timer type is next
-                ic(f"start time:{Timer.start_time} | running: {Timer.running} | remaining time: {Timer.remaining_time}")
+                # ic(f"start time:{Timer.start_time} | running: {Timer.running} | remaining time: {Timer.remaining_time}")
 
 
         if event == "(Un)Pause":
             Timer.pause = not Timer.pause
-            ic("(un)pause pressed")
+            # ic("(un)pause pressed")
             # if button is paused while timer is self.running
             if Timer.running and Timer.pause:
                 Timer.pause_start_time = time.time()
                 Timer.running = False
-                ic(f"pause start time:{Timer.pause_start_time} | pause: {Timer.pause} | paused duration: {Timer.paused_duration}")
+                # ic(f"pause start time:{Timer.pause_start_time} | pause: {Timer.pause} | paused duration: {Timer.paused_duration}")
             elif not Timer.running and not Timer.pause:
                 Timer.paused_duration += time.time() - Timer.pause_start_time
                 Timer.running = True
-                ic(f"pause start time:{Timer.pause_start_time} | pause: {Timer.pause} | paused duration: {Timer.paused_duration}")
+                # ic(f"pause start time:{Timer.pause_start_time} | pause: {Timer.pause} | paused duration: {Timer.paused_duration}")
 
         if event == "Next":
-            ic("Next")
+            # ic("Next")
             timer_type = Timer.pomodoro.pop(0)
             if timer_type is not None:
                 Timer.remaining_time = self.__get_remaining_time(values, timer_type) # pop's which timer type is next
                 Timer.paused_duration = 0
                 Timer.start_time = time.time()
-                ic(f"start time:{Timer.start_time} | running: {Timer.running} | remaining time: {Timer.remaining_time}")
+                # ic(f"start time:{Timer.start_time} | running: {Timer.running} | remaining time: {Timer.remaining_time}")
             else:
                 event = "Reset"
 
         if event == "Reset":
-            ic("Reset")
+            # ic("Reset")
             Timer.running = False
             Timer.remaining_time = 0
             Timer.pomodoro = self.__reset_pomodoro()
