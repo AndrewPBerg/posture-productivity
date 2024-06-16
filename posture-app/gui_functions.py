@@ -73,15 +73,32 @@ class Timer:
 
     def __reset_pomodoro(self) -> list:
         return ["Timer","Short Break","Timer","Short Break","Timer","Long Break","Done"]
-        
+    
+    def next_timer(self, values):
+        timer_type = Timer.pomodoro.pop(0)
+        if timer_type is not None:
+            Timer.remaining_time = self.__get_remaining_time(values, timer_type) # pop's which timer type is next
+            Timer.paused_duration = 0
+            Timer.start_time = time.time()
+            Timer.running = True
 
-    def check_buttons(self, values, event: str,auto_start=False, auto_next=False):
-        ic(auto_start)
-        
-        ic(auto_start and Timer.remaining_time == 0 and Timer.pomodoro[0] == "Timer")
-        # ic(Timer.remaining_time)
 
-        if event == "Start"  or (auto_start and Timer.remaining_time == 0 and Timer.pomodoro[0] == "Timer"):
+    def check_buttons(self, values, event: str, auto_next=False, auto_start=False):
+        # ic(auto_next and Timer.remaining_time == 0)
+
+        # simply, (sitting) and (work timer is next) and (timer not running)
+        try:
+            if (auto_start and Timer.pomodoro[0] == "Timer" and not Timer.running):
+                self.next_timer(values)
+            if (auto_next and not Timer.running and Timer.pomodoro[0]=="Short Break" or Timer.pomodoro[0]=="Long Break"):
+                self.next_timer(values)
+            if (event == "Next"):
+                self.next_timer(values)
+                # print(f"start time:{Timer.start_time} | running: {Timer.running} | remaining time: {Timer.remaining_time} | timer_type: {timer_type}")
+        except IndexError:
+            event == "Reset"
+        
+        if event == "Start":
             
             ic(Timer.remaining_time)
             ic("start pressed")
@@ -108,16 +125,6 @@ class Timer:
                 Timer.running = True
                 # ic(f"pause start time:{Timer.pause_start_time} | pause: {Timer.pause} | paused duration: {Timer.paused_duration}")
 
-        if event == "Next" or (auto_next and Timer.remaining_time == 0 and (Timer.pomodoro[0] == "Short Break" or Timer.pomodoro[0] == "Long Break")):
-            # ic("Next")
-            timer_type = Timer.pomodoro.pop(0)
-            if timer_type is not None:
-                Timer.remaining_time = self.__get_remaining_time(values, timer_type) # pop's which timer type is next
-                Timer.paused_duration = 0
-                Timer.start_time = time.time()
-                # ic(f"start time:{Timer.start_time} | running: {Timer.running} | remaining time: {Timer.remaining_time}")
-            else:
-                event = "Reset"
 
         if event == "Reset":
             # ic("Reset")
@@ -137,14 +144,14 @@ class Timer:
     def __get_remaining_time(self, values, timer_type) -> int:
         try:
             if timer_type == "Timer":
-                # return int(values["-TIMER-"]) * 60
-                return float(values["-TIMER-"]) * 60
+                return int(values["-TIMER-"]) * 60
+                # return float(values["-TIMER-"]) * 60
             elif timer_type == "Short Break":
-                # return int(values["-SHORTBREAK-"]) * 60
-                return float(values["-SHORTBREAK-"]) * 60
+                return int(values["-SHORTBREAK-"]) * 60
+                # return float(values["-SHORTBREAK-"]) * 60
             elif timer_type == "Long Break":
-                # return int(values["-LONGBREAK-"]) * 60
-                return float(values["-LONGBREAK-"]) * 60
+                return int(values["-LONGBREAK-"]) * 60
+                # return float(values["-LONGBREAK-"]) * 60
             elif timer_type == "Done":
                 # what to do when done with the timer
                 # sg.popup("You completed a work cycle!")
@@ -167,7 +174,6 @@ class Timer:
         if Timer.time_left <= 0:
             Timer.running = False
             Timer.time_left = 0
-            Timer.pomodoro = self.__reset_pomodoro()
         # print(f"display timer: {self.__format_time(time_left)}")
         self.window["-DISPLAYTIMER-"].update(self.__format_time(Timer.time_left))
 
