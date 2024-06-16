@@ -28,7 +28,6 @@ def main():
     closeness_color = (247, 245, 245)
     shldr_level_color = (247, 245, 245)
 
-
     # used for of-off buttons
     # get the base64 strings for the button images
     toggle_btn_off, toggle_btn_on = toggle_button_images() 
@@ -63,7 +62,8 @@ def main():
     
     # Initialize Tabgroups
     tab1_layout = [
-        [sg.Text("Set Timer (minutes):"), sg.Combo(values=["20","25","30","35"], key="-TIMER-",  default_value="0.1")], # TODO change default_value back to "25"
+        [sg .Text("Set Timer (minutes):"), sg.Combo(values=["20","25","30","35"], key="-TIMER-",  default_value="0.1")], # TODO Del
+        # [sg.Text("Set Timer (minutes):"), sg.Combo(values=["20","25","30","35"], key="-TIMER-",  default_value="0.1")], 
         [sg.Text("Short Break (minutes):"), sg.Combo(["1","3","5"], key="-SHORTBREAK-",  default_value="3")],
         [sg.Text("Long Break (minutes):"), sg.Combo(["15","20","25","30"], key="-LONGBREAK-", default_value="35")],
         [sg.Text("Countdown Timer:", size=(15, 1)), sg.Text("", size=(8, 1), key="-DISPLAYTIMER-")],
@@ -73,7 +73,8 @@ def main():
         [sg.Text("", key=("-DONE-KEY-"))],
     ]
     tab2_layout = [[sg.Button(button_text="Change The Baseline Posture To Current Frame",tooltip="Click to change default good posture values to your current posture", key="-BASELINE-BUTTON")],
-                   [sg.Text("'Laxness:"),sg.Slider(default_value=5, orientation="h",enable_events=True, key="-SLIDER-")]]
+                   [sg.Text("'Laxness:"),sg.Slider(default_value=5, orientation="h",enable_events=True, key="-SLIDER-")],
+                   [sg.Text("Display main video (on/off)"),sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-VIDEO-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)]]
     tab3_layout = [[sg.Text("Debug Settings:")],
                    [sg.Text("Display annotations (On/Off):"),sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-ANNOTATIONS-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],
                    [sg.Text("Display Posture Data (On/Off):"),sg.Button("", image_data=toggle_btn_on, key="-TOGGLE-DATA-", button_color=(sg.theme_background_color(), sg.theme_background_color()), border_width=0)],
@@ -120,7 +121,7 @@ def main():
         success, image = cap.read()
 
         if not success:
-            ic("Error reading image") # TODO write "no webcam found" in window, not terminal
+            sg.popup("Error reading image, plugin your camera and restart app")
             break
 
         results, image = process_frame(image, pose)
@@ -150,6 +151,9 @@ def main():
             automatic_standing_timer  = not automatic_standing_timer
             if not automatic_standing_timer:
                 window["-AUTO-STANDING-TEXT"].update("")
+        elif event == "-TOGGLE-VIDEO-":
+            display_cv2_video  = not display_cv2_video
+            window["-TOGGLE-VIDEO-"].update(image_data=toggle_btn_on if display_cv2_video else toggle_btn_off)
 
             window["-TOGGLE-NEXT-"].update(image_data=toggle_btn_on if automatic_standing_timer else toggle_btn_off)
         elif event == "-SLIDER-":
@@ -263,8 +267,11 @@ def main():
             except UnboundLocalError as e1:
                 ic(f"UnboundLocalError caught: {e1}")
         
-        imgbytes = cv2.imencode(".png", image)[1].tobytes()
-        window["image"].update(data=imgbytes)
+        if display_cv2_video:
+            imgbytes = cv2.imencode(".png", image)[1].tobytes()
+            window["image"].update(data=imgbytes)
+        else:
+            window["image"].update(data=None)
 
     cap.release()
     window.close()
@@ -275,5 +282,3 @@ if __name__ == "__main__":
         main()
     else:
         print("This OS is not supported")
-
-
