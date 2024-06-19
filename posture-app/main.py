@@ -32,7 +32,7 @@ def main():
     # get the base64 strings for the button images
     toggle_btn_off, toggle_btn_on = toggle_button_images() 
 
-    # Initialize pose
+    # Initialize poses
     pose = mp.solutions.pose.Pose(static_image_mode=False, model_complexity=0)
 
     # default values set for offset and inclination conditions
