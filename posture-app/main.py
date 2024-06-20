@@ -51,7 +51,7 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     if not cap.isOpened():
-        print("Error: Unable to access the camera")
+        sg.Popup("Error: Unable to access the camera")
         return
 
     # Get image metadata
@@ -251,16 +251,12 @@ def main():
                             last_alert_time = total_time
                             if play_audio:
                                 alert_user()
-                                # try:
-                                    # alert_user("buzz-notif.mp3")
-                                # except:
-                                #     alert_user("posture-app/buss-notif.mp3")
+
 
             except TypeError as e0:
-                ic(f"TYPE ERROR CAUGHT: {e0}")
+                sg.Popup(f"TYPE ERROR CAUGHT: {e0}")
             except UnboundLocalError as e1:
-                ic(f"UnboundLocalError caught: {e1}")
-        
+                sg.Popup(f"UnboundLocalError caught: {e1}")
         if display_cv2_video:
             imgbytes = cv2.imencode(".png", image)[1].tobytes()
             window["image"].update(data=imgbytes)
@@ -272,7 +268,6 @@ def main():
 
 if __name__ == "__main__": 
     if running_windows or running_mac:
-        # cProfile.run('main()')
         main()
     else:
-        print("This OS is not supported")
+        sg.Popup("This OS is not supported")

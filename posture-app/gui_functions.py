@@ -43,16 +43,19 @@ def toggle_button_images():
     return toggle_btn_off, toggle_btn_on
 
 def alert_user():
-    mixer.init()
-    # mixer.music.load("bell-notif.wav")
-    mixer.music.load("buzz-notif.mp3")
-    # try:
-    #     mixer.music.load(audio_file)
-    # except FileNotFoundError as e:
-    #     print("file not found", e)
-    mixer.music.set_volume(0.2)
-    mixer.music.play(fade_ms=10)
 
+    try:
+        mixer.init()
+        # mixer.music.load("bell-notif.wav")
+        mixer.music.load("buzz-notif.mp3")
+        # try:
+        #     mixer.music.load(audio_file)
+        # except FileNotFoundError as e:
+        #     print("file not found", e)
+        mixer.music.set_volume(0.2)
+        mixer.music.play(fade_ms=10)
+    except FileNotFoundError as e:
+        sg.Popup(f"{e}")
 class Timer:
     # Static variables
     paused_duration = 0
@@ -100,16 +103,16 @@ class Timer:
         
         if event == "Start":
             
-            ic(Timer.remaining_time)
-            ic("start pressed")
-            ic(Timer.pomodoro[0])
+            # ic(Timer.remaining_time)
+            # ic("start pressed")
+            # ic(Timer.pomodoro[0])
             self.window["-DONE-KEY-"].update("")
             
             if not Timer.running:
                 Timer.start_time = time.time()
                 Timer.running = True
                 Timer.remaining_time = self.__get_remaining_time(values,Timer.pomodoro.pop(0)) # pop's which timer type is next
-                ic("not running:", Timer.pomodoro[0])
+                # ic("not running:", Timer.pomodoro[0])
                 # ic(f"start time:{Timer.start_time} | running: {Timer.running} | remaining time: {Timer.remaining_time}")
 
         if event == "(Un)Pause":
@@ -169,7 +172,7 @@ class Timer:
                 Timer.time_left = Timer.remaining_time - Timer.elapsed_time
                 # ic(f"current_time {time.time()}| elapsed time:{Timer.elapsed_time} | time_left: {Timer.time_left}")
             except TypeError as e:
-                print(f"type error: {e}")
+                sg.Popup(f"type error: {e}")
 
         if Timer.time_left <= 0:
             Timer.running = False
