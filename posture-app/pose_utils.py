@@ -1,7 +1,7 @@
 import mediapipe as mp
-from icecream import ic
 import math as m
 import cv2
+
 
 def process_frame(image, pose):
     """
@@ -12,31 +12,34 @@ def process_frame(image, pose):
     * pose([mediapipe] mp.solutions.pose.Pose() object)
 
     Returns:
-    * results: returns mp.pose processed image data 
+    * results: returns mp.pose processed image data
     * image: returns the same frame
 
-    Example: 
-    `results, image = process_frame(image, pose)` 
+    Example:
+    `results, image = process_frame(image, pose)`
     """
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = pose.process(image_rgb)
     return results, cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
 
-def get_landmark_coordinates(landmarks, landmark_name, image_width, image_height, calc_z=False):
-    """
-    ### Calculate a given landmarks x and y values relative to frames resolution 
 
-    Args: 
+def get_landmark_coordinates(
+    landmarks, landmark_name, image_width, image_height, calc_z=False
+):
+    """
+    ### Calculate a given landmarks x and y values relative to frames resolution
+
+    Args:
     * landmarks: () accepts results.pose_landmarks
     * landmark_name: accepts lmPose.* get the name of the desired landmark to be checked
     * image_width: width of the image
     * image_height: height of the image
 
-    Returns: 
+    Returns:
     * x, y : coordinates calculated from the pixel position of landmark
     * None, None: in the case of exceptions
 
-    Example: 
+    Example:
     lm = results.pose_landmarks
     lmPose = mp_pose.PoseLandmark
 
@@ -55,15 +58,16 @@ def get_landmark_coordinates(landmarks, landmark_name, image_width, image_height
     except AttributeError:
         # Handle case where landmarks are not properly initialized
         return None, None
-    
+
+
 def calculate_posture_metrics(pose, image):
     """
     ### Capture a snapshot of the user's posture and return key metrics in a dictionary format.
-    
-    Args: 
+
+    Args:
     * pose: (mediapipe pose object from: mp.solutions.pose.Pose())
     * image: (Any cv2 image)
-    
+
     Returns:
     * metrics: a dictionary containing landmark coordinates, and calculated offsets, torso/neck inclinations
 
@@ -81,9 +85,15 @@ def calculate_posture_metrics(pose, image):
     mp_landmarks = mp.solutions.pose.PoseLandmark
 
     # Calculate posture coordinates
-    l_shldr_x, l_shldr_y, l_shldr_z = get_landmark_coordinates(lm, mp_landmarks.LEFT_SHOULDER, w, h, calc_z=True)
-    r_shldr_x, r_shldr_y, r_shldr_z= get_landmark_coordinates(lm, mp_landmarks.RIGHT_SHOULDER, w, h, calc_z=True)
-    l_ear_x, l_ear_y, l_ear_z = get_landmark_coordinates(lm, mp_landmarks.LEFT_EAR, w, h, calc_z=True)
+    l_shldr_x, l_shldr_y, l_shldr_z = get_landmark_coordinates(
+        lm, mp_landmarks.LEFT_SHOULDER, w, h, calc_z=True
+    )
+    r_shldr_x, r_shldr_y, r_shldr_z = get_landmark_coordinates(
+        lm, mp_landmarks.RIGHT_SHOULDER, w, h, calc_z=True
+    )
+    l_ear_x, l_ear_y, l_ear_z = get_landmark_coordinates(
+        lm, mp_landmarks.LEFT_EAR, w, h, calc_z=True
+    )
     l_hip_x, l_hip_y = get_landmark_coordinates(lm, mp_landmarks.LEFT_HIP, w, h)
 
     # Calculate distance between left shoulder and right shoulder points
@@ -108,18 +118,19 @@ def calculate_posture_metrics(pose, image):
         "shldr_distance": shldr_distance,
         "neck_inclination": neck_inclination,
         "torso_inclination": torso_inclination,
-        "closeness": abs((l_shldr_z + r_shldr_z + l_ear_z) / 3), # arithmetic mean of shldr + ear z's
+        "closeness": abs(
+            (l_shldr_z + r_shldr_z + l_ear_z) / 3
+        ),  # arithmetic mean of shldr + ear z's
         "shldr_level": abs(l_shldr_y - r_shldr_y),
     }
-
 
 
 def findDistance(x1, y1, x2, y2):
     dist = m.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     return dist
 
+
 def findAngle(x1, y1, x2, y2):
-    theta = m.acos((y2 - y1) * (-y1) / (m.sqrt(
-        (x2 - x1) ** 2 + (y2 - y1) ** 2) * y1))
+    theta = m.acos((y2 - y1) * (-y1) / (m.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) * y1))
     degree = int(180 / m.pi) * theta
     return degree
