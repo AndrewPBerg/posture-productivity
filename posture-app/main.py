@@ -243,7 +243,7 @@ def main():
 
         results, image = process_frame(image, pose)
 
-        event, values = window.read(timeout=20)
+        event, values = window.read(timeout=30)
 
         if event is not None and values is not None:
             timer.check_buttons(values, event)
